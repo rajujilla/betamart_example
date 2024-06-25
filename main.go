@@ -9,6 +9,25 @@ import (
 	"golang.org/x/exp/rand"
 )
 
+const (
+	HttpResponseHeaderContentType = "Content-Type"
+	MimeApplicationJSON           = "application/json"
+)
+
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	healthData := map[string]string{
+		"status": "up",
+	}
+	jsonResponse, err := json.Marshal(healthData)
+	if err != nil {
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set(HttpResponseHeaderContentType, MimeApplicationJSON)
+	w.Write(jsonResponse)
+}
+
 func timeHandler(w http.ResponseWriter, r *http.Request) {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("15:04:05")
@@ -23,7 +42,7 @@ func timeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(HttpResponseHeaderContentType, MimeApplicationJSON)
 	w.Write(jsonResponse)
 }
 
@@ -43,17 +62,17 @@ func buzzwordHandler(w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(selectedBuzzwords)
 	if err != nil {
-		http.Error(w, "Error generating buzzwords", http.StatusInternalServerError)
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(HttpResponseHeaderContentType, MimeApplicationJSON)
 	w.Write(response)
 }
 
 func main() {
+	http.HandleFunc("/health", healthCheckHandler)
 	http.HandleFunc("/api/time", timeHandler)
-
 	http.HandleFunc("/api/buzzwords", buzzwordHandler)
 
 	fmt.Println("Server starting on port 8888...")
